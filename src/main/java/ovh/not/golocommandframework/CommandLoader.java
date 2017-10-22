@@ -1,12 +1,8 @@
 package ovh.not.golocommandframework;
 
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.eclipse.golo.compiler.GoloClassLoader;
-import org.eclipse.golo.compiler.GoloCompiler;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +10,7 @@ import java.util.List;
 class CommandLoader {
     private static final GoloClassLoader CLASS_LOADER = new GoloClassLoader();
 
-    List<Command> load(File dir) throws FileNotFoundException, NoSuchMethodException {
+    List<Command> load(File dir) throws IOException, NoSuchMethodException {
         List<Command> commands = new ArrayList<>();
 
         if (dir.isFile()) {
@@ -26,6 +22,14 @@ class CommandLoader {
             return commands;
         }
 
+        File executorFile = new File("src/main/resources/executor.golo");
+
+        // the first arg serves as an identifier for compile errors, the next takes an input stream for the source
+        Class<?> executorClazz = CLASS_LOADER.load(executorFile.getAbsolutePath(), new FileInputStream(executorFile));
+
+        // get the execute method which takes the source, event and args
+        Method executorMethod = executorClazz.getDeclaredMethod("execute", Object.class, Object.class, Object.class);
+
         for (File file : files) {
             if (file.isDirectory()) {
                 List<Command> subDirCommands = load(file);
@@ -33,17 +37,19 @@ class CommandLoader {
                 continue;
             }
 
-            Class<?> clazz = CLASS_LOADER.load(file.getAbsolutePath(), new FileInputStream(file));
-            Method method = clazz.getDeclaredMethod("execute", Object.class, Object.class);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
+                StringBuilder builder = new StringBuilder();
 
-            if (method == null) {
-                throw new RuntimeException("error loading method for " + file.getName());
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line).append("\n");
+                }
+
+                String name = file.getName().substring(0, file.getName().indexOf("."));
+                Command command = new Command(executorMethod, name, builder.toString());
+
+                commands.add(command);
             }
-
-            String name = file.getName().substring(0, file.getName().indexOf("."));
-            Command command = new Command(name, method);
-
-            commands.add(command);
         }
 
         return commands;

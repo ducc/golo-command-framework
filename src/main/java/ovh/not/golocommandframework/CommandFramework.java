@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class CommandFramework {
                 System.out.println("Loaded command \"" + name + "\"");
                 this.commands.put(name, command);
             }
-        } catch (FileNotFoundException | NoSuchMethodException e) {
+        } catch (NoSuchMethodException | IOException e) {
             e.printStackTrace();
             return;
         }

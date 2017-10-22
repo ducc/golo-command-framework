@@ -1,5 +1,3 @@
-module checks
-
 function execute = |event, args| {
-    event: getChannel(): sendMessage("Pong!"): queue()
+    event: getChannel(): sendMessage("Checks!"): queue()
 }

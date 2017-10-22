@@ -7,21 +7,27 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 public class Command {
+    private final Method executor;
     private final String name;
-    private final Method method;
+    private final String source;
 
-    Command(String name, Method method) {
+    Command(Method executor, String name, String source) {
+        this.executor = executor;
         this.name = name;
-        this.method = method;
+        this.source = source;
     }
 
     public String getName() {
         return name;
     }
 
+    public String getSource() {
+        return source;
+    }
+
     void execute(GuildMessageReceivedEvent event, List<String> args) {
         try {
-            method.invoke(null, event, args);
+            executor.invoke(null, source, event, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }

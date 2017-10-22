@@ -1,8 +1,9 @@
 module framework.executor
 
 let std = """
-function test = {
-    println("test!")
+function textResponse = |f| -> |event, args| {
+    let message = f: invoke(event, args)
+    event: getChannel(): sendMessage(message): queue()
 }
 """
 

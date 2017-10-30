@@ -14,31 +14,39 @@ import java.util.Optional;
 
 public class CommandFramework {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandFramework.class);
+    private static final CommandLoader COMMAND_LOADER = new CommandLoader();
 
     private final Map<String, Command> commands = new HashMap<>();
 
     private String prefix;
+    private File commandsDirectory;
 
     private Listener listener;
 
     private CommandFramework(String prefix, File commandsDirectory) {
         this.prefix = prefix;
+        this.commandsDirectory = commandsDirectory;
 
-        CommandLoader loader = new CommandLoader();
+        if (!reloadCommands()) return;
+
+        this.listener = new Listener(this);
+    }
+
+    public boolean reloadCommands() {
         try {
-            List<Command> commands = loader.load(commandsDirectory);
+            List<Command> commands = COMMAND_LOADER.load(commandsDirectory);
 
             for (Command command : commands) {
                 String name = command.getName().toLowerCase();
                 System.out.println("Loaded command \"" + name + "\"");
                 this.commands.put(name, command);
             }
+
+            return true;
         } catch (NoSuchMethodException | IOException e) {
             e.printStackTrace();
-            return;
+            return false;
         }
-
-        this.listener = new Listener(this);
     }
 
     public String getPrefix() {

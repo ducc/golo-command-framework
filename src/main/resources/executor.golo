@@ -15,28 +15,28 @@ function check = |closure| -> |f| -> |event, args| {
 }
 
 # continues command execution only if the user is the guild owner
-function ownerOnly = |f| -> |event, args| {
+function owner = |f| -> |event, args| {
     if event: getMember(): isOwner() {
         return f: invoke(event, args)
     }
 }
 
 # continues only if the user is a bot
-function botOnly = |f| -> |event, args| {
+function bot = |f| -> |event, args| {
     if event: getAuthor(): isBot() {
         return f: invoke(event, args)
     }
 }
 
 # continues only if the user is not a bot
-function userOnly = |f| -> |event, args| {
+function user = |f| -> |event, args| {
     if not event: getAuthor(): isBot() {
         return f: invoke(event, args)
     }
 }
 
 # continues if the user has the specified role by id
-function hasRoleById = |roleId| -> |f| -> |event, args| {
+function roleById = |roleId| -> |f| -> |event, args| {
     let role = event: getGuild(): getRoleById(roleId)
     if event: getMember(): getRoles(): contains(role) {
         return f: invoke(event, args)
@@ -44,7 +44,7 @@ function hasRoleById = |roleId| -> |f| -> |event, args| {
 }
 
 # continues if the user has the specified role by name
-function hasRoleByName = |roleName, ignoreCase| -> |f| -> |event, args| {
+function roleByName = |roleName, ignoreCase| -> |f| -> |event, args| {
     foreach role in event: getMember(): getRoles() {
         let name = role: getName()
 
@@ -57,6 +57,42 @@ function hasRoleByName = |roleName, ignoreCase| -> |f| -> |event, args| {
                 return f: invoke(event, args)
             }
         }
+    }
+}
+
+# continue if the user is in a voice channel
+function inVoiceChannel = |f| -> |event, args| {
+    let vc = event: getMember(): getVoiceState(): getChannel()
+    if vc != null {
+        return f: invoke(event, args)
+    }
+}
+
+# continue if the user is in a voice channel
+function notInVoiceChannel = |f| -> |event, args| {
+    let vc = event: getMember(): getVoiceState(): getChannel()
+    if vc == null {
+        return f: invoke(event, args)
+    }
+}
+
+# continue if the user is in a voice channel
+function inVoiceChannelOrMsg = |msg| -> |f| -> |event, args| {
+    let vc = event: getMember(): getVoiceState(): getChannel()
+    if vc != null {
+        return f: invoke(event, args)
+    } else {
+        event: getChannel(): sendMessage(msg): queue()
+    }
+}
+
+# continue if the user is in a voice channel
+function notInVoiceChannelOrMsg = |msg| -> |f| -> |event, args| {
+    let vc = event: getMember(): getVoiceState(): getChannel()
+    if vc == null {
+        return f: invoke(event, args)
+    } else {
+        event: getChannel(): sendMessage(msg): queue()
     }
 }
 """

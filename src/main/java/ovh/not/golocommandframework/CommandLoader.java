@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 class CommandLoader {
-    private static final GoloClassLoader CLASS_LOADER = new GoloClassLoader();
-
     List<Command> load(File dir) throws IOException, NoSuchMethodException {
         List<Command> commands = new ArrayList<>();
 
@@ -25,7 +23,8 @@ class CommandLoader {
         File executorFile = new File("src/main/resources/executor.golo");
 
         // the first arg serves as an identifier for compile errors, the next takes an input stream for the source
-        Class<?> executorClazz = CLASS_LOADER.load(executorFile.getAbsolutePath(), new FileInputStream(executorFile));
+        Class<?> executorClazz = new GoloClassLoader()
+                .load(executorFile.getAbsolutePath(), new FileInputStream(executorFile));
 
         // get the execute method which takes the source, event and args
         Method executorMethod = executorClazz.getDeclaredMethod("execute", Object.class, Object.class, Object.class);

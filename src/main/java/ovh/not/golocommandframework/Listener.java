@@ -48,6 +48,12 @@ class Listener extends ListenerAdapter {
 
         List<String> args = Arrays.stream(split).skip(1).collect(Collectors.toList());
 
+        if (split[0].equals("reload")) {
+            framework.reloadCommands();
+            event.getChannel().sendMessage("Reloaded!").queue();
+            return;
+        }
+
         framework.getCommand(split[0]).ifPresent(command -> command.execute(event, args));
     }
 }
